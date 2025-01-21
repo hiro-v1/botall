@@ -5,11 +5,15 @@ import requests
 from pyrogram import Client, filters
 from tgvc import VoiceChat
 from vimeo import VimeoClient
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Telegram API details
-API_ID = 123456  # Ganti dengan API ID Anda
-API_HASH = "your_api_hash"  # Ganti dengan API Hash Anda
-BOT_TOKEN = "your_bot_token"  # Ganti dengan Bot Token Anda
+API_ID = int(os.getenv("API_ID"))
+API_HASH = os.getenv("API_HASH")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 # Vimeo API setup
 VIMEO_CLIENT = VimeoClient(
@@ -18,13 +22,12 @@ VIMEO_CLIENT = VimeoClient(
     secret="3CbaqJGca7v78sG1+apB+iMO5SSiD+rZs4nCTO5sAGPJVL4o4vdJ1aObUZaSeslu3pt22/ruKle1KEDIPPy/NJ8hCH0zK7RZOwfHha6XQtFRV4IfyPoDbZN3LecId6/n"
 )
 
-# API for music
+# Deezer API endpoint
 DEEZER_API_URL = "https://api.deezer.com/search"
 
 # Initialize bot and voice chat
 app = Client("mvhiro_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 vc = VoiceChat(app)
-
 
 # Helper functions
 async def fetch_music(query):
@@ -39,7 +42,6 @@ async def fetch_music(query):
         print(f"Error fetching music: {e}")
     return None
 
-
 async def fetch_video(query):
     """Fetch video using Vimeo API."""
     try:
@@ -50,7 +52,6 @@ async def fetch_video(query):
         print(f"Error fetching video from Vimeo: {e}")
     return None
 
-
 async def mention_members(chat_id, duration=300):
     """Mention 5 random members in a group repeatedly for a specified duration."""
     end_time = asyncio.get_event_loop().time() + duration
@@ -60,7 +61,6 @@ async def mention_members(chat_id, duration=300):
         mentions = " ".join([f"@{m.username}" for m in random_members if m.username])
         await app.send_message(chat_id, mentions)
         await asyncio.sleep(10)
-
 
 # Command handlers
 @app.on_message(filters.command("start"))
@@ -81,11 +81,9 @@ async def help_command(_, message):
     )
     await message.reply(help_text)
 
-
 @app.on_message(filters.command("admin"))
 async def admin(_, message):
     await message.reply("Bot ini dibuat oleh @hiro_v1")
-
 
 @app.on_message(filters.command("play"))
 async def play(_, message):
@@ -101,7 +99,6 @@ async def play(_, message):
     else:
         await message.reply("Musik tidak ditemukan.")
 
-
 @app.on_message(filters.command("vplay"))
 async def vplay(_, message):
     query = " ".join(message.command[1:])
@@ -116,20 +113,17 @@ async def vplay(_, message):
     else:
         await message.reply("Video tidak ditemukan.")
 
-
 @app.on_message(filters.command("stop"))
 async def stop(_, message):
     await vc.stop()
     await vc.leave(message.chat.id)
     await message.reply("Pemutaran dihentikan.")
 
-
 @app.on_message(filters.command("all"))
 async def all(_, message):
     chat_id = message.chat.id
     await message.reply("Mention dimulai. Untuk menghentikan, gunakan perintah /stop.")
     asyncio.create_task(mention_members(chat_id))
-
 
 # Run the bot
 if __name__ == "__main__":
